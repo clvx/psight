@@ -22,9 +22,34 @@ func (mh myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(fmt.Sprintf("%v world", mh.greeting)))
 }
 
+const tax = 6.75 / 100
+
+type Product struct {
+	Name  string
+	Price float32
+}
+
+func (p Product) PriceWithTax() float32 {
+	return p.Price * (1 + tax)
+}
+
+const templateString = `
+{{- "Item information" }}
+Name: {{ .Name }}
+Price: {{ printf "$%.2f" .Price }}
+Price with Tax: {{ .PriceWithTax | printf "$%.2f" }} //This is a method, same formatting as the previous line
+`
+
+const customTemplateString = `
+{{- "Item Information" }}
+Name: {{ .Name }}
+Price: {{ printf "$%.2f" .Price }}
+Price with Tax: {{ calctax .Price | printf "$%.2f" }}
+`
+
 func main() {
 	wg := &sync.WaitGroup{}
-	wg.Add(2)
+	wg.Add(4)
 	go func(wg *sync.WaitGroup) {
 		//Handle registers the handler for the given pattern
 		// in the DefaultServerMux
@@ -70,5 +95,39 @@ func main() {
 		http.ListenAndServe(":8002", nil)
 		wg.Done()
 	}(wg)
+
+	go func(wg *sync.WaitGroup) {
+		http.HandleFunc("/foo/price", func(w http.ResponseWriter, r *http.Request) {
+
+			p := Product{
+				Name:  "Lemonade",
+				Price: 2.16,
+			}
+			t := template.Must(template.New("").Parse(templateString))
+			t.Execute(w, p)
+		})
+		http.ListenAndServe(":8003", nil)
+		wg.Done()
+	}(wg)
+
+	go func(wg *sync.WaitGroup) {
+		http.HandleFunc("/foo/custom-price", func(w http.ResponseWriter, r *http.Request) {
+			p := Product{
+				Name:  "Lemonade",
+				Price: 2.16,
+			}
+			fm := template.FuncMap{} //Creating an object of type FuncMap
+			//Creating a custom function instead of using methods as the previous example
+			// FuncMap expects a map of interfaces which accepts any type as a value.
+			fm["calctax"] = func(price float32) float32 {
+				return price * (1 + tax)
+			}
+			t := template.Must(template.New("").Funcs(fm).Parse(customTemplateString))
+			t.Execute(w, p)
+		})
+		http.ListenAndServe(":8004", nil)
+		wg.Done()
+	}(wg)
+
 	wg.Wait()
 }
