@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
+	"os"
 	"sync"
 )
 
@@ -43,6 +45,21 @@ func main() {
 		})
 		http.ListenAndServe(":8001", nil)
 		wg.Done()
+	}(wg)
+
+	go func(wg *sync.WaitGroup) {
+		templateString := `Lemonade Stand Supply`
+		t, err := template.New("title").Parse(templateString)
+		if err != nil {
+			fmt.Println(err)
+		}
+		//Execute applies a parsed template to the specified data object,
+		// writing the output to wr.
+		//os.Stdout implements io.Writer interface
+		err = t.Execute(os.Stdout, nil)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}(wg)
 	wg.Wait()
 }
