@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/lss/webapp/viewmodel"
 )
 
 func main() {
@@ -14,10 +16,17 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		requestedFile := r.URL.Path[1:] // removing leading / character
 		//Find template based on its name and filetype
-		t := templates[requestedFile+".html"]
-		if t != nil {
+		template := templates[requestedFile+".html"]
+		var context interface{} //empty interface - it takes any data value
+		switch requestedFile{
+		case "shop":
+			context = viewmodel.NewShop()
+		default:
+			context = viewmodel.NewBase()
+		}
+		if template != nil {
 			//Rendering and writing template to io.Writer
-			err := t.Execute(w, nil)
+			err := template.Execute(w, context)
 			if err != nil {
 				log.Println(err)
 			}
