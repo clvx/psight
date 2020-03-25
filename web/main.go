@@ -48,18 +48,27 @@ func main() {
 	}(wg)
 
 	go func(wg *sync.WaitGroup) {
-		templateString := `Lemonade Stand Supply`
-		t, err := template.New("title").Parse(templateString)
-		if err != nil {
-			fmt.Println(err)
-		}
-		//Execute applies a parsed template to the specified data object,
-		// writing the output to wr.
-		//os.Stdout implements io.Writer interface
-		err = t.Execute(os.Stdout, nil)
-		if err != nil {
-			fmt.Println(err)
-		}
+		http.HandleFunc("/baz", func(w http.ResponseWriter, r *http.Request) {
+			templateString := `Lemonade Stand Supply`
+			t, err := template.New("title").Parse(templateString)
+			if err != nil {
+				fmt.Println(err)
+			}
+			//Execute applies a parsed template to the specified data object,
+			// writing the output to wr.
+			//os.Stdout implements io.Writer interface
+			err = t.Execute(os.Stdout, nil)
+			if err != nil {
+				fmt.Println(err)
+			}
+			//w implementes io.Writer interface.
+			err = t.Execute(w, nil)
+			if err != nil {
+				fmt.Println(err)
+			}
+		})
+		http.ListenAndServe(":8002", nil)
+		wg.Done()
 	}(wg)
 	wg.Wait()
 }
