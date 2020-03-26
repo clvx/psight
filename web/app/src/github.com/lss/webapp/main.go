@@ -18,11 +18,11 @@ func main() {
 		//Find template based on its name and filetype
 		template := templates[requestedFile+".html"]
 		var context interface{} //empty interface - it takes any data value
-		switch requestedFile{
+		switch requestedFile {
 		case "shop":
 			context = viewmodel.NewShop()
 		default:
-			context = viewmodel.NewBase()
+			context = viewmodel.NewHome()
 		}
 		if template != nil {
 			//Rendering and writing template to io.Writer
