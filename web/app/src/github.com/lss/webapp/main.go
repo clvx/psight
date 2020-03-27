@@ -3,40 +3,16 @@ package main
 import (
 	"html/template"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 
-	"github.com/lss/webapp/viewmodel"
+	"app/src/github.com/lss/webapp/controller"
 )
 
 func main() {
-
 	templates := populateTemplates() //Loading templates
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		requestedFile := r.URL.Path[1:] // removing leading / character
-		//Find template based on its name and filetype
-		template := templates[requestedFile+".html"]
-		var context interface{} //empty interface - it takes any data value
-		switch requestedFile {
-		case "shop":
-			context = viewmodel.NewShop()
-		default:
-			context = viewmodel.NewHome()
-		}
-		if template != nil {
-			//Rendering and writing template to io.Writer
-			err := template.Execute(w, context)
-			if err != nil {
-				log.Println(err)
-			}
-		} else {
-			//Writing 404 to http.ResponseWriter.WriteHeader
-			w.WriteHeader(http.StatusNotFound)
-		}
-	})
-	http.Handle("/img/", http.FileServer(http.Dir("public")))
-	http.Handle("/css/", http.FileServer(http.Dir("public")))
+	controller.Startup(templates)
+	
 	http.ListenAndServe(":8000", nil)
 }
 
