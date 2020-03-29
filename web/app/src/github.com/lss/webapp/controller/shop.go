@@ -3,22 +3,60 @@ package controller
 import (
 	"html/template"
 	"net/http"
+	"regexp"
+	"strconv"
+
+	"app/src/github.com/lss/webapp/model"
 	"app/src/github.com/lss/webapp/viewmodel"
 )
 
 //holds shop.html template
 type shop struct {
-	shopTemplate *template.Template
+	shopTemplate     *template.Template
+	categoryTemplate *template.Template
+	productTemplate  *template.Template
 }
 
 //registerRoutes register the web routes
-func (h shop) registerRoutes() {
-	http.HandleFunc("/shop", h.handleShop)
+func (s shop) registerRoutes() {
+	http.HandleFunc("/shop", s.handleShop)
+	http.HandleFunc("/shop/", s.handleShop)
+	http.HandleFunc("/products/", s.handleProduct)
 }
 
-//handleHome implements HandleFunc handler
-func (h shop) handleShop(w http.ResponseWriter, r *http.Request) {
-	vm := viewmodel.NewShop()
-	//Rendering and writing template to io.Writer
-	h.shopTemplate.Execute(w, vm)
+func (s shop) handleShop(w http.ResponseWriter, r *http.Request) {
+	categoryPattern, _ := regexp.Compile(`/shop/(\d+)`)
+	matches := categoryPattern.FindStringSubmatch(r.URL.Path)
+	if len(matches) > 0 {
+		categoryID, _ := strconv.Atoi(matches[1])
+		s.handleCategory(w, r, categoryID)
+	} else {
+		categories := model.GetCategories()
+		vm := viewmodel.NewShop(categories)
+		s.shopTemplate.Execute(w, vm)
+	}
+}
+
+func (s shop) handleCategory(w http.ResponseWriter, r *http.Request, categoryID int) {
+	products := model.GetProductsForCategory(categoryID)
+	vm := viewmodel.NewShopDetail(products)
+	s.categoryTemplate.Execute(w, vm)
+}
+
+func (s shop) handleProduct(w http.ResponseWriter, r *http.Request) {
+	productPattern, _ := regexp.Compile(`/products/(\d+)`)
+	matches := productPattern.FindStringSubmatch(r.URL.Path)
+	if len(matches) > 0 {
+		productID, _ := strconv.Atoi(matches[1])
+		product, err := model.GetProduct(productID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		vm := viewmodel.NewProduct(product)
+		s.productTemplate.Execute(w, vm)
+
+	} else {
+		http.NotFound(w, r)
+	}
 }

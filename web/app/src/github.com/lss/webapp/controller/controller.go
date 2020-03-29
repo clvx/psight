@@ -6,14 +6,16 @@ import (
 )
 
 var (
-	homeController home //home type
-	shopController shop //shop type
+	homeController home
+	shopController shop
 )
 
 func Startup(templates map[string]*template.Template) {
-	//assign templates
 	homeController.homeTemplate = templates["home.html"]
+	homeController.standLocatorTemplate = templates["stand_locator.html"]
 	shopController.shopTemplate = templates["shop.html"]
+	shopController.categoryTemplate = templates["shop_details.html"]
+	shopController.productTemplate = templates["shop_detail.html"]
 	//register routes
 	homeController.registerRoutes()
 	shopController.registerRoutes()

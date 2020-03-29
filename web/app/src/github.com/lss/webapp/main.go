@@ -12,7 +12,6 @@ import (
 func main() {
 	templates := populateTemplates() //Loading templates
 	controller.Startup(templates)
-	
 	http.ListenAndServe(":8000", nil)
 }
 
