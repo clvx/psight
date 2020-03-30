@@ -148,4 +148,94 @@ that come into the server.
 - Parametric Routing:
     - Routes requests to pages based on url parameters.
 
-    
+## Working with HTTP Requests 
+- Query parameters: 
+
+    https://localhost:8000/search?q=products&page=1
+
+    func (w http.ResponseWriter, r *http.Request) {
+        url := r.URL                // net/url.URL - access to the url itself
+        query := url.Query()        // net/url.Values (map[string][]string)
+                                    // map of string of slice of strings,
+                                    // a key parameter could appear multiple times in an url.
+        q := query["q"]             // []string{"producs"}
+        page := query.Get("page")   // "1" , returns the first instance object of that key.
+    }
+
+- Form data:
+
+    <form action="." method="post">
+        Username: <input type="text" name="username"/>
+        Password: <input type="password" name="password"/>
+        <button type="submit"</button>
+    </form>
+
+
+    func (w http.ResponseWriter, r *http.Request){
+        err := r.ParseForm          // Populate Form and PostForm fields on the request object
+
+        f := r.Form                 // net/url.Values (map[string][]string)
+                                    // map of string of slice of strings,
+                                    // a key parameter could appear multiple times in an url.
+        username := f["username"]   // []string{"Michael"}
+
+        pass := f.Get("password") // "password", returns the first instance object of that key.
+    }
+
+    - Parsing form data: Letting the request object know you are recieving a form.
+        - ParseForm
+        - ParseMultipleForm
+    - Reading form data 
+        - Form, populate itself wherever it can get the data(request body or url parameters).
+        - PostForm, populate itself using request body data but it won't look into
+        the url parameters.
+        - FormValues(), returns the first value for the named component of the query. 
+        POST and PUT body parameters take precedence over URL query string values.
+        - PostFormValue(), returns the first value for the named component of the 
+        POST, PATCH, or PUT request body. URL query parameters are ignored.
+        - FormFile(), returns the first file for the provided form key.
+        - MultipartReader(),  returns a MIME multipart reader if this is a multipart/form-data 
+        or a multipart/mixed POST request, else returns nil and an error. Use this 
+        function instead of ParseMultipartForm to process the request body as a stream. 
+
+- Working with JSON
+
+    { 
+        "term":  "products",
+        "page": 1,
+        "pageSize": 25
+    }
+
+    //Using tags to map struct field names to json keys
+    type Query struct {
+        Term        string  `json:"term"`
+        Page        int     `json:"page"`
+        PageSize    int     `json:"pageSize"`
+    }
+
+    - Reading JSON
+
+    func (w http.ResponseWriter, r *http.Request) {
+        dec := json.NewDecoder(r.Body)      // NewDecoder returns a new decoder that reads from r. 
+                                            //r.Body implements the reader interface.
+        var query Query
+        err := dec.Decode(&query)           //stores data after it's being decoded in query.
+                                            //Decode reads the next JSON-encoded 
+                                            //value from its input and stores it 
+                                            //in the value pointed to by v. 
+    }
+
+    - Writing JSON
+
+    type Result struct {
+        ID          int     `json:"id" 
+        Name        string  `json:"name" 
+        Description string  `json:"string" 
+    }
+
+    func (w http.ResponseWriter, r *http.Request) {
+        var results []Result = model.GetResults()
+        enc := json.NewEnconder(w) //w implements io.Writer
+        err := enc.Encode(results) //Encode writes the JSON encoding of v to the 
+                                   // stream, followed by a newline character. 
+    }
