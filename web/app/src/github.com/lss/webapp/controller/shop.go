@@ -10,14 +10,12 @@ import (
 	"app/src/github.com/lss/webapp/viewmodel"
 )
 
-//holds shop.html template
 type shop struct {
 	shopTemplate     *template.Template
 	categoryTemplate *template.Template
 	productTemplate  *template.Template
 }
 
-//registerRoutes register the web routes
 func (s shop) registerRoutes() {
 	http.HandleFunc("/shop", s.handleShop)
 	http.HandleFunc("/shop/", s.handleShop)

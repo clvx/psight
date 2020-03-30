@@ -6,8 +6,9 @@ import (
 )
 
 var (
-	homeController home
-	shopController shop
+	homeController         home
+	shopController         shop
+	standLocatorController standLocator
 )
 
 func Startup(templates map[string]*template.Template) {
