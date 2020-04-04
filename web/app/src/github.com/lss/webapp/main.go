@@ -7,12 +7,14 @@ import (
 	"os"
 
 	"app/src/github.com/lss/webapp/controller"
+	"app/src/github.com/lss/webapp/middleware"
 )
 
 func main() {
 	templates := populateTemplates()
 	controller.Startup(templates)
-	http.ListenAndServe(":8000", nil)
+	//Using middleware instead of nil(http.DefaultServeMux)
+	http.ListenAndServe(":8000", new(middleware.GzipMiddleware))
 }
 
 func populateTemplates() map[string]*template.Template {
