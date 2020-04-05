@@ -239,3 +239,82 @@ that come into the server.
         err := enc.Encode(results) //Encode writes the JSON encoding of v to the 
                                    // stream, followed by a newline character. 
     }
+
+## Middleware
+
+A request would be processed before the request handler. In the same way, a response
+would be processed after the request handler.
+
+- Creating a middleware: To implement a middleware we must implement the handler
+interface. 
+
+    //if handler is nil, it will use http.DefaultServerMux
+    http.ListenAndServer(addr string, handler Handler) error
+
+    type Handler interface {
+        ServeHTTP(ResponseWriter, *Request)
+    }
+
+    type Middleware struct {
+        Next http.Handler
+    }
+
+    func (m MyMiddleware) ServeHTTP(w htt.ResponseWriter, r *http.Request) {
+        // do things before next handler(managing request)
+
+        m.Next.ServerHTTP(w, r) //forwards request to whichever next handler is.
+                                //It could be another middleware or http.DefaultServerMux
+
+        // do things after next handler(managing response)
+    }
+
+- Common uses:
+    - Logging.
+    - Security.
+    - Request timeouts.
+    - Response compression.
+
+## Context
+A way to think about context package in go is that it allows you to pass in a “context” 
+to your program. Context like a timeout or deadline or a channel to indicate stop 
+working and return.
+
+- Using request contexts
+
+    //Returns the current context the request is operating whitin
+    //Context() does not allow to manipulate the context, only interrogate it
+    func (*Request) Context() context.Context
+
+    //WithContext() allows you to modify the context
+    func (*Request) WithContext(ctx context.Context) context.Context
+
+- Context API
+
+    type Context interface {
+        //Deadline() lets you know when the context becomes invalid
+        Deadline() (deadline time.Time, ok bool)
+
+        //Gets a signal on a channel when the context is aborted(like receiving a singnal)
+        Done() <-chan struct{}
+
+        //Error when context is aborted
+        Err() error
+
+        //Pull information from the context to pass them between layers
+        Value(key interface{}) interface{}
+    }
+
+- Modify Context
+
+    //Return a new context with a Context.Cancel() which allows sending a signal 
+    // to the Done() channel to cancel the context
+    WithCancel()
+
+    //Like Context.Cancel() but it adds a timestamp to the Done() channel
+    WithDeadline()
+
+    //Like WithDeadline() but instead of a time it adds a duration to the Done() channel
+    WithTimeOut()
+
+    //Create a new context which adds a new value onto the existing context
+    WithValue()

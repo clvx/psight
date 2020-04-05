@@ -14,7 +14,8 @@ func main() {
 	templates := populateTemplates()
 	controller.Startup(templates)
 	//Using middleware instead of nil(http.DefaultServeMux)
-	http.ListenAndServe(":8000", new(middleware.GzipMiddleware))
+	//Wrapping middleware.GzipMiddleware into middleware.TimeoutMiddleware
+	http.ListenAndServe(":8000", &middleware.TimeoutMiddleware{new(middleware.GzipMiddleware)})
 }
 
 func populateTemplates() map[string]*template.Template {

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"time"
 	"html/template"
 	"log"
 	"net/http"
@@ -27,6 +28,10 @@ func (h home) registerRoutes() {
 func (h home) handleHome(w http.ResponseWriter, r *http.Request) {
 	vm := viewmodel.NewHome()
 	w.Header().Add("Content-Type", "text/html")
+
+	//triggering the timeout context to return a http.StatusRequestTimeout
+	//time.Sleep(4*time.Second)
+
 	//Rendering and writing template to io.Writer
 	h.homeTemplate.Execute(w, vm)
 }
