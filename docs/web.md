@@ -318,3 +318,49 @@ working and return.
 
     //Create a new context which adds a new value onto the existing context
     WithValue()
+
+## Database
+
+- Connecting a database
+
+    package main
+    //importing a package just for its side effects(whatever is in init()) 
+    import _ "github.com/lib/pq" // driver for Postgres
+    import "database/sql"
+    func main() {
+    ...
+    db, err := sql.Open("postgres", {connection string})
+
+    }
+
+- Querying 
+    - sql.Query(), pulls one or more rows.
+    - sql.QueryRowContext(), similary to sql.QueryRow() but it takes an optional context
+
+    type Rows interface {}
+    func (*Rows) Close() error //closing the query when it's done
+    func (*Rows) ColumnTypes() ([]*ColumnType, error) //Information about the columns of that row set
+    func (*Rows) Columns() ([]string, error) //returns the column names
+    func (*Rows) Err() error //returns if something went wrong with the query
+    func (*Rows) Next() bool //gets each record at a time
+    func (*Rows) NextResultSet() bool //gets next result set
+    func (*Rows) Scan(dest ...interface{}) error //pull data from the current row into variables
+
+    - sql.QueryRow(), pulls one row.
+    - sql.QueryContext(), similary to sql.Query() but it takes an optional context
+
+    type Row struct {}
+    func (*Row) Scan(dest ...interface{}) error //pull data from the result set into variables
+
+- Updating
+   - sql.Exec(), to insert, update or delete.
+   - sql.ExecContext(), same as sql.Exec() but with a context
+   Both return a result object.
+
+- Others
+    - sql.Ping(), checking if db is available
+    - sql.PingContext(), same as sql.Ping with context
+    - sql.Prepare(), used for prepare statements
+    - sql.PrepareContext(), same as sql.Prepare() with context
+    - sql.Begin(), return a transaction object which isolated to the scope of the transaction
+    - sql.BeginTx(), rollback for the transaction object
