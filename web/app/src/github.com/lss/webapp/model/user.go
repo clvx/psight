@@ -1,9 +1,7 @@
 package model
 
 import (
-	"crypto/sha512"
 	"database/sql"
-	"encoding/base64"
 	"fmt"
 	"log"
 	"time"
@@ -22,15 +20,18 @@ type User struct {
 
 func Login(email, password string) (*User, error) {
 	result := &User{}
-	hasher := sha512.New()
-	hasher.Write([]byte(passwordSalt))
-	hasher.Write([]byte(email))
-	hasher.Write([]byte(password))
-	pwd := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+	/*
+		hasher := sha512.New()
+		hasher.Write([]byte(passwordSalt))
+		hasher.Write([]byte(email))
+		hasher.Write([]byte(password))
+		pwd := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+	*/
 	// QueryRow executes a query that is expected to return at most one row.
+	pwd := "password"
 	row := db.QueryRow(`
 		SELECT id, email, firstname, lastname
-		FROM public.user
+		FROM public.users
 		WHERE email = $1
 			AND password = $2`, email, pwd)
 	err := row.Scan(&result.ID, &result.Email, &result.FirstName, &result.LastName)
@@ -43,11 +44,13 @@ func Login(email, password string) (*User, error) {
 	t := time.Now()
 	//ignoring the result object
 	_, err = db.Exec(`
-	UPDATE public.user
+	UPDATE public.users
 	SET lastlogin = $1
 	WHERE id = $2`, t, result.ID)
 	if err != nil {
 		log.Printf("Failed to update login time for user %v to %v: %v", result.Email, t, err)
+	} else {
+		log.Printf("new time %v: ", t)
 	}
 	return result, nil
 }
