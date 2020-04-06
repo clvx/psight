@@ -2,20 +2,41 @@ package main
 
 import (
 	"html/template"
+	"fmt"
+	"log"
+	"database/sql"
 	"io/ioutil"
 	"net/http"
 	"os"
 
 	"app/src/github.com/lss/webapp/controller"
 	"app/src/github.com/lss/webapp/middleware"
+	"app/src/github.com/lss/webapp/model"
+
+	_ "github.com/lib/pq"
 )
 
 func main() {
 	templates := populateTemplates()
+	db := connectToDatabase()
+	defer db.Close()
 	controller.Startup(templates)
 	//Using middleware instead of nil(http.DefaultServeMux)
 	//Wrapping middleware.GzipMiddleware into middleware.TimeoutMiddleware
 	http.ListenAndServe(":8000", &middleware.TimeoutMiddleware{new(middleware.GzipMiddleware)})
+}
+
+func connectToDatabase() *sql.DB{
+	//username: lss
+	//pass: lss
+	//hostname: localhost
+	//database: lss
+	db, err := sql.Open("postgres", "postgres://lss:lss@localhost/lss?sslmode=disable")
+	if err != nil {
+		log.Fatalln(fmt.Errorf("Unable to connect to database: %v", err))
+	}
+	model.SetDatabase(db)
+	return db
 }
 
 func populateTemplates() map[string]*template.Template {
