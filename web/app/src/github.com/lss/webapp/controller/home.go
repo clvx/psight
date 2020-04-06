@@ -2,19 +2,20 @@ package controller
 
 import (
 	"fmt"
-	"time"
+	//"time"
 	"html/template"
 	"log"
 	"net/http"
 
 	"app/src/github.com/lss/webapp/viewmodel"
+	"app/src/github.com/lss/webapp/model"
 )
 
 //home holds home.html template
 type home struct {
 	homeTemplate         *template.Template
 	standLocatorTemplate *template.Template
-	loginTemplate		 *template.Template
+	loginTemplate        *template.Template
 }
 
 //registerRoutes register the web routes
@@ -51,11 +52,13 @@ func (h home) handleLogin(w http.ResponseWriter, r *http.Request) {
 		}
 		email := r.Form.Get("email")       //getting email from form
 		password := r.Form.Get("password") //getting email from form
-		if email == "test@gmail.com" && password == "password" {
+		if user, err := model.Login(email, password); err == nil {
+			log.Printf("User has logged in: %v\n", user)
 			//redirect to home
 			http.Redirect(w, r, "/home", http.StatusTemporaryRedirect)
 			return
 		} else {
+			log.Printf("Failed to log user in with email: %v, error was: %v\n", email, err)
 			vm.Email = email
 			vm.Password = password
 		}
