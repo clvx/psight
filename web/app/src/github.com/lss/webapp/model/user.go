@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -38,6 +39,15 @@ func Login(email, password string) (*User, error) {
 		return nil, fmt.Errorf("User not found")
 	case err != nil:
 		return nil, err
+	}
+	t := time.Now()
+	//ignoring the result object
+	_, err = db.Exec(`
+	UPDATE public.user
+	SET lastlogin = $1
+	WHERE id = $2`, t, result.ID)
+	if err != nil {
+		log.Printf("Failed to update login time for user %v to %v: %v", result.Email, t, err)
 	}
 	return result, nil
 }
