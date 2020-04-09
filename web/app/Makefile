@@ -7,3 +7,6 @@ populate:
 	\c lss
 	create table users( id int primary key not null, email varchar null, password varchar null, firstname varchar null, lastname varchar null, lastlogin date null );
 	insert into users values (1, 'test@gmail.com', 'password', 'Luis', 'Ibarra', '2020-04-06');
+
+tls: 
+	go run /snap/go/5569/src/crypto/tls/generate_cert.go -host localhost

@@ -364,3 +364,8 @@ working and return.
     - sql.PrepareContext(), same as sql.Prepare() with context
     - sql.Begin(), return a transaction object which isolated to the scope of the transaction
     - sql.BeginTx(), rollback for the transaction object
+
+## Beyond HTTP/1.1
+
+    - http.ListenAndServer()
+    - http.ListenAndServerTLS()

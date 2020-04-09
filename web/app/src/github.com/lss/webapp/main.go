@@ -23,7 +23,7 @@ func main() {
 	controller.Startup(templates)
 	//Using middleware instead of nil(http.DefaultServeMux)
 	//Wrapping middleware.GzipMiddleware into middleware.TimeoutMiddleware
-	http.ListenAndServe(":8000", &middleware.TimeoutMiddleware{new(middleware.GzipMiddleware)})
+	http.ListenAndServeTLS(":8000", "cert.pem", "key.pem",  &middleware.TimeoutMiddleware{new(middleware.GzipMiddleware)})
 }
 
 func connectToDatabase() *sql.DB{
