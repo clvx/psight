@@ -28,24 +28,42 @@ func (gm *GzipMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//Compressing the reponse
 	w.Header().Add("Content-Encoding", "gzip")
 	//Writes to the returned writer are compressed and written to w.
-	gzipwriter := gzip.NewWriter(w)
-	defer gzipwriter.Close()
-	//implementing the http.ResponseWritter to pass our gzipwriter to the next handler
-	grw := gzipResponseWriter{
-		ResponseWriter: w,
-		Writer:         gzipwriter,
+	gzipWriter := gzip.NewWriter(w)
+	defer gzipWriter.Close()
+	var rw http.ResponseWriter
+	//verifying the response implements the Pusher interface
+	if pusher, ok := w.(http.Pusher); ok {
+		//overwriting gzip ResponseWriter with the http.Pusher
+		rw = gzipPusherResponseWriter{
+			gzipResponseWriter: gzipResponseWriter{
+				ResponseWriter: w,
+				Writer:         gzipWriter,
+			},
+			Pusher: pusher,
+		}
+	} else {
+		//implementing the http.ResponseWritter to pass our gzipWriter to the next handler
+		rw = gzipResponseWriter{
+			ResponseWriter: w,
+			Writer:         gzipWriter,
+		}
 	}
-	gm.Next.ServeHTTP(grw, r)
-
+	gm.Next.ServeHTTP(rw, r)
 }
 
-//Implementing the http.ResponseWriter and writing interface
+//Implementing the http.ResponseWriter and writing interface for gzip
 type gzipResponseWriter struct {
 	http.ResponseWriter
 	io.Writer
 }
 
-//Overwriting the writing interface so it does not collide with gzipwriter Writer.
+//Implementing the gzipResponseWriter with http.Pusher
+type gzipPusherResponseWriter struct {
+	gzipResponseWriter
+	http.Pusher
+}
+
+//Overwriting the writing interface so it does not collide with gzipWriter Writer.
 func (grw gzipResponseWriter) Write(data []byte) (int, error) {
 	return grw.Writer.Write(data)
 }

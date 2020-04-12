@@ -366,6 +366,22 @@ working and return.
     - sql.BeginTx(), rollback for the transaction object
 
 ## Beyond HTTP/1.1
+    - HTTPS:
+        - http.ListenAndServer()
+        - http.ListenAndServerTLS()
 
-    - http.ListenAndServer()
-    - http.ListenAndServerTLS()
+    - HTTP/2:
+        - Multiplexing: HTTP/1.1 loads resources one after the other, so if one 
+        resource cannot be loaded, it blocks all the other resources behind it. 
+        In contrast, HTTP/2 is able to use a single TCP connection to send multiple 
+        streams of data at once so that no one resource blocks any other resource.
+        - Server push: Allows a server to "push" content to a client before the 
+        client asks for it. The server also sends a message letting the client 
+        know what pushed content to expect.
+        - Header compression: HTTP/2 uses a more advanced compression method called 
+        HPACK that eliminates redundant information in HTTP header packets. This 
+        eliminates a few bytes from every HTTP packet. 
+        - Stream prioritization: Allows the client to provide preference to particular 
+        data streams. It works with dependencies and weight assigned to each stream.
+        - more info: https://kinsta.com/learn/what-is-http2/
+
